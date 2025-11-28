@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 from core.config import uvicorn_options
-from api.V1.user import user_router
+from src.api import api_router
 
 class MyGetFuncResponseSchema(BaseModel):
     app_name: str
@@ -15,6 +15,7 @@ class User(BaseModel):
     name: str
     email: EmailStr
     age: Optional[int] = None
+
 
 app = FastAPI(
     docs_url="/api/openapi"
@@ -50,7 +51,7 @@ async def root():
     return {"message": "Hello World"}
 
 app.include_router(router)
-app.include_router(user_router)
+app.include_router(api_router)
 
 if __name__ == "__main__":
     print(uvicorn_options)
