@@ -1,11 +1,15 @@
 import multiprocessing
 from pydantic_settings import BaseSettings
+from pydantic import PostgresDsn
+from pydantic_core import MultiHostUrl
+
 
 class AppSettings(BaseSettings):
     app_port: int = 8000
     app_host: str = 'localhost'
     reload: bool = True
     cpu_count: int | None = None
+    postgres_dsn: PostgresDsn = MultiHostUrl('postgresql+asyncpg://user:password@localhost/dbname')
 
     class Config:
         _env_file = ".env"

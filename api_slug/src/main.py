@@ -3,8 +3,8 @@ from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
-from core.config import uvicorn_options
 from src.api import api_router
+from core.config import uvicorn_options
 
 class MyGetFuncResponseSchema(BaseModel):
     app_name: str
