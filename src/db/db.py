@@ -3,15 +3,11 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker, 
     create_async_engine,
     AsyncSession, 
-    AsyncEngine
 )
-from sqlalchemy.exc import SQLAlchemyError
-from core.config import app_settings
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from typing import AsyncGenerator, Annotated
 
-
-class InternalError(Exception):
-    pass
+from core.config import app_settings
 
 
 # Создание асинхронного движка SQLAlchemy
@@ -36,20 +32,26 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     Автоматически управляет жизненным циклом сессии.
     """
     async with async_session() as session:
-        try:
-            yield session
-            # Если не было исключений - коммитим транзакцию
-            await session.commit()
-        except SQLAlchemyError as e:
-            # В случае ошибки откатываем транзакцию
-            await session.rollback()
-            raise HTTPException(
-                status_code=500, 
-                detail=f"Database error: {str(e)}"
-            )
-        finally:
-            # Всегда закрываем сессию
-            await session.close()
+        #использование контекстного менеджера для управления транзакцией
+        async with session.begin():
+            try:
+                yield session
+                # Если не было исключений коммит транзакции произойдёт автоматически
+            except IntegrityError as e:
+                # В случае ошибки транзакция откатывается автоматически
+                
+                raise HTTPException(
+                    status_code=409, 
+                    detail=f"Data integrity error: {str(e.orig)}"
+                    )
+            except SQLAlchemyError as e:
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Database error: {str(e)}"
+                    )
+            finally:
+                # Всегда закрываем сессию
+                await session.close()
 
 
 # Создание зависимости для работы с базой данных

@@ -2,14 +2,16 @@ import multiprocessing
 from pydantic_settings import BaseSettings
 from pydantic import PostgresDsn
 from pydantic_core import MultiHostUrl
-
+#DNS базы данных надо сообщить в alembic
 
 class AppSettings(BaseSettings):
     app_port: int = 8000
     app_host: str = 'localhost'
     reload: bool = True
     cpu_count: int | None = None
-    postgres_dsn: PostgresDsn = MultiHostUrl('postgresql+asyncpg://user:password@localhost/dbname')
+    postgres_dsn: PostgresDsn = "postgresql+asyncpg://postgres:password@localhost/postgres"
+    jwt_secret: str = "your_super_secret"
+    algorithm: str = 'HS256'
 
     class Config:
         _env_file = ".env"
